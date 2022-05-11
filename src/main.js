@@ -1,51 +1,19 @@
-import AvatarIcon from './view/avatar.js';
-import NewNavMenu from './view/nav-menu.js';
-import NewSort from './view/sort.js';
-import NewFilms from './view/film-list.js';
-import NewButtonShowMore from './view/button-show-more.js';
-import NewFilmsRated from './view/films-rated.js';
-import NewFilmsMostComment from './view/films-most-commented.js';
+import FilmsSectionPresenter from './presenter/films-section-presenter.js';
+import FilmCardsModel from './model/film-cards-model.js';
+import UserTitleView from './view/user-title-view.js';
+import NavigationView from './view/navigation-view.js';
+import FiltersView from './view/filters-view.js';
 import { render } from './render.js';
-import NewFilmsCatalog from './presenter/films-presenter.js';
-import NewFilmsCatalogRated from './presenter/rated-films-precenter.js';
-import NewFilmsCatalogMostComment from './presenter/most-comment-films-presenter.js';
-import NewFilmCardModel from './model/film-card-model.js';
-import NewFilmPopup from './presenter/popup-presenter.js';
-import NewComment from './model/film-coment-model.js';
 
-const header = document.querySelector('.header');
+const pageBody = document.querySelector('body');
+const pageHeaderSection = pageBody.querySelector('.header');
+const pageMainSection = pageBody.querySelector('.main');
 
-const main = document.querySelector('.main');
+const filmCardsModel = new FilmCardsModel();
+const filmsSectionPresenter = new FilmsSectionPresenter(pageMainSection, pageBody, filmCardsModel);
 
-const footer = document.querySelector('.footer');
+render(new UserTitleView(), pageHeaderSection);
+render(new NavigationView(), pageMainSection);
+render(new FiltersView(), pageMainSection);
 
-const filmsCatalogPresenter = new NewFilmsCatalog();
-
-const filmsCatalogRatedPresenter = new NewFilmsCatalogRated();
-
-const filmsCatalogMostCommentPresenter = new NewFilmsCatalogMostComment();
-
-const filmsCardModel = new NewFilmCardModel();
-
-const filmPopupPresenter = new NewFilmPopup();
-
-const filmCommentPresenter = new NewComment();
-
-render( new AvatarIcon (), header);
-render( new NewNavMenu(), main);
-render(new NewSort(), main);
-render(new NewFilms(), main);
-
-const filmsContainer = main.querySelector('.films-list__container');
-filmsCatalogPresenter.init(filmsContainer, filmsCardModel);
-const films = main.querySelector('.films');
-
-render(new NewButtonShowMore, films);
-render(new NewFilmsRated, films);
-render(new NewFilmsMostComment, films);
-
-const topRated = main.querySelector('.rated');
-filmsCatalogRatedPresenter.init(topRated, filmsCardModel);
-const mostCommented = main.querySelector('.most_commented');
-filmsCatalogMostCommentPresenter.init(mostCommented, filmsCardModel);
-filmPopupPresenter.init(footer, filmsCardModel, filmCommentPresenter);
+filmsSectionPresenter.init();
