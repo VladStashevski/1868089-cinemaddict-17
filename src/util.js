@@ -9,6 +9,7 @@ const getRandomInteger = (a = 0, b = 1) => {
 
   return Math.floor(lower + Math.random() * (upper - lower + 1));
 };
+
 //Функция взята со StackOverflow: https://stackoverflow.com/questions/17726753/get-a-random-number-between-0-0200-and-0-120-float-numbers и доработана
 const getRandomFloat = (a, b, decimal = 1) => {
   const min = Math.min(Math.abs(a), Math.abs(b));
