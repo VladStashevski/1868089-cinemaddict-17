@@ -11,9 +11,10 @@ import FilmPopupBottomContainerView from '../view/popup/film-popup-bottom-contai
 import FilmPopupCommentsWrapView from '../view/popup/film-popup-comments-wrap-view.js';
 import FilmPopupCommentsListView from '../view/popup/film-popup-comments-list-view.js';
 import FilmPopupNewCommentView from '../view/popup/film-popup-new-comment-view.js';
+import FilmsListEmptyView from '../view/films-list-empty-view.js';
 import CommentsModel from '../model/comments-model.js';
-
 import { render } from '../render.js';
+import { MAX_CARDS } from '../const.js';
 
 const FILM_CARD_LINK_CLASS = '.film-card__link';
 const POPUP_SECTION_CLASS = 'film-details';
@@ -33,11 +34,14 @@ export default class FilmsSectionPresenter {
   #filmCardsModel = null;
   #commentsModel = null;
   #filmCards = [];
+  #filmCardsList = [];
   #comments = [];
 
   #filmsSectionComponent = new FilmsSectionView();
   #filmsListComponent = new FilmsListSectionView();
   #filmsListContainer = new FilmsListContainerView();
+  #showMoreButton = new ShowMoreButtonView();
+  #filmsListEmpty = new FilmsListEmptyView();
 
   constructor(filmsSectionContainer, popupContainer, filmCardsModel) {
     this.#filmsSectionContainer = filmsSectionContainer;
@@ -50,10 +54,11 @@ export default class FilmsSectionPresenter {
     render(this.#filmsSectionComponent, this.#filmsSectionContainer);
     render(this.#filmsListComponent, this.#filmsSectionComponent.element);
     render(this.#filmsListContainer, this.#filmsListComponent.element);
-    for (let i = 0; i < this.#filmCards.length; i++) {
-      this.#renderCard(this.#filmCards[i]);
+    if (this.#filmCards.length === 0) {
+      return render(this.#filmsListEmpty, this.#filmsListContainer.element);
     }
-    render(new ShowMoreButtonView(), this.#filmsListComponent.element);
+    this.#renderCardsList();
+    this.#renderShowMoreButton();
   };
 
   #renderCard = (film) => {
@@ -62,6 +67,23 @@ export default class FilmsSectionPresenter {
 
     cardComponent.element.querySelector(FILM_CARD_LINK_CLASS).addEventListener('click', filmCardClickHandler);
     render(cardComponent, this.#filmsListContainer.element);
+  };
+
+  #renderCardsList = () => {
+    for (let i = 0; i < MAX_CARDS; i++) {
+      if (this.#filmCards.length < MAX_CARDS) {
+        this.#filmCards.forEach(this.#renderCard);
+        this.#filmCards = [];
+        break;
+      }
+      this.#renderCard(this.#filmCards[i]);
+      this.#filmCards.splice(i, 1);
+    }
+  };
+
+  #renderShowMoreButton = () => {
+    render(this.#showMoreButton, this.#filmsListComponent.element);
+    this.#showMoreButton.element.addEventListener('click', this.#showMoreButtonClickHandler);
   };
 
   #renderPopup = (film) => {
@@ -106,6 +128,13 @@ export default class FilmsSectionPresenter {
     render(commentComponent, this.#popupCommentsWrap.element);
   };
 
+  #showMoreButtonClickHandler = () => {
+    this.#renderCardsList();
+    if (this.#filmCards.length === 0) {
+      this.#filmsListComponent.element.removeChild(this.#showMoreButton.element);
+    }
+  };
+
   #popupEscKeydownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
@@ -114,4 +143,5 @@ export default class FilmsSectionPresenter {
   };
 
   #popupCloseButtonClickHandler = () => this.#hidePopup();
+
 }
