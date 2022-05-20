@@ -22,19 +22,18 @@ const POPUP_CLOSE_BUTTON_CLASS = '.film-details__close-btn';
 const DOCUMENT_NO_SCROLL_CLASS = 'hide-overflow';
 
 export default class FilmsSectionPresenter {
-  #popupCommentsList = null;
-  #popupBottomContainer = null;
-  #newCommentForm = null;
   #popupFormComponent = null;
   #popupSectionComponent = null;
-  #filmsSectionContainer = null;
+  #popupCommentsList = null;
+  #popupBottomContainer = null;
   #popupContainer = null;
   #popupTopContainer = null;
   #popupCommentsWrap = null;
+  #newCommentForm = null;
+  #filmsSectionContainer = null;
   #filmCardsModel = null;
   #commentsModel = null;
   #filmCards = [];
-  #filmCardsList = [];
   #comments = [];
 
   #filmsSectionComponent = new FilmsSectionView();
@@ -87,8 +86,6 @@ export default class FilmsSectionPresenter {
   };
 
   #renderPopup = (film) => {
-    this.#hidePopup();
-    this.#popupContainer.classList.add(DOCUMENT_NO_SCROLL_CLASS);
     this.#commentsModel = new CommentsModel(film);
     this.#comments = [...this.#commentsModel.comments];
     this.#popupCommentsWrap = new FilmPopupCommentsWrapView(film.comments);
@@ -98,6 +95,9 @@ export default class FilmsSectionPresenter {
     this.#popupBottomContainer = new FilmPopupBottomContainerView();
     this.#popupCommentsList = new FilmPopupCommentsListView();
     this.#popupTopContainer = new FilmPopupTopContainerView(film);
+
+    this.#hidePopup();
+    this.#popupContainer.classList.add(DOCUMENT_NO_SCROLL_CLASS);
 
     render(this.#popupFormComponent, this.#popupSectionComponent.element);
     render(this.#popupTopContainer, this.#popupFormComponent.element);
