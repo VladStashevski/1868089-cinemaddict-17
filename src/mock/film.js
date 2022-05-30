@@ -1,4 +1,4 @@
-import { getRandomInteger, getRandomIndex, getRandomFloat, getRandomIntegerArray, generateSentences } from '../util.js';
+import { getRandomInteger, getRandomIndex, getRandomFloat, getRandomIntegerArray, generateSentences } from '../utils/common.js';
 import { MAX_COMMENT_ID, MAX_COMMENTS, MAX_SENTENCES, MOCK_TITLES } from '../const.js';
 
 const MAX_FILM_ID = 100;
