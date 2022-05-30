@@ -1,5 +1,7 @@
-import { createElement } from '../../render.js';
-import { humanizeReleaseDate, humanizeRuntime } from '../../util.js';
+import AbstractView from '../../framework/view/abstract-view.js';
+import { humanizeReleaseDate, humanizeRuntime } from '../../utils/film-view.js';
+
+const POPUP_CLOSE_BUTTON_CLASS = '.film-details__close-btn';
 
 const createGenreTemplate = (filmGenre) => `<span class="film-details__genre">${filmGenre}</span>`;
 
@@ -16,22 +18,18 @@ const createFilmPopupTopSectionTemplate = (film) => {
   <div class="film-details__info-wrap">
   <div class="film-details__poster">
     <img class="film-details__poster-img" src="${poster}" alt="">
-
     <p class="film-details__age">${ageRating}+</p>
   </div>
-
   <div class="film-details__info">
     <div class="film-details__info-head">
       <div class="film-details__title-wrap">
         <h3 class="film-details__title">${title}</h3>
         <p class="film-details__title-original">Original: ${title}</p>
       </div>
-
       <div class="film-details__rating">
         <p class="film-details__total-rating">${totalRating}</p>
       </div>
     </div>
-
     <table class="film-details__table">
       <tr class="film-details__row">
         <td class="film-details__term">Director</td>
@@ -61,11 +59,9 @@ const createFilmPopupTopSectionTemplate = (film) => {
         <td class="film-details__term">Genres</td>
         <td class="film-details__cell">${insertGenreElements()}</tr>
     </table>
-
     <p class="film-details__film-description">${description}</p>
   </div>
   </div>
-
 <section class="film-details__controls">
   <button type="button" class="film-details__control-button film-details__control-button--watchlist" id="watchlist" name="watchlist">Add to watchlist</button>
   <button type="button" class="film-details__control-button film-details__control-button--active film-details__control-button--watched" id="watched" name="watched">Already watched</button>
@@ -73,10 +69,9 @@ const createFilmPopupTopSectionTemplate = (film) => {
 </section>
 </div>`);};
 
-export default class FilmPopupTopContainerView {
-  #element = null;
-
+export default class FilmPopupTopContainerView extends AbstractView {
   constructor(film) {
+    super();
     this.film = film;
   }
 
@@ -84,15 +79,13 @@ export default class FilmPopupTopContainerView {
     return createFilmPopupTopSectionTemplate(this.film);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
+  setCloseButtonClickHandler = (cb) => {
+    this._callback.click = cb;
+    this.element.querySelector(POPUP_CLOSE_BUTTON_CLASS).addEventListener('click', this.#closeButtonClickHandler);
+  };
 
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #closeButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
+  };
 }
