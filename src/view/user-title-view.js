@@ -1,29 +1,15 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createUserTitleTemplate = () => (`
 <section class="header__profile profile">
-<p class="profile__rating">Duncan Idaho</p>
+<p class="profile__rating">Movie Buff</p>
 <img class="profile__avatar" src="images/bitmap@2x.png" alt="Avatar" width="35" height="35">
 </section>
 `);
 
-export default class UserTitleView {
-  #element = null;
-
+export default class UserTitleView extends AbstractView {
   get template() {
     return createUserTitleTemplate();
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }
 
