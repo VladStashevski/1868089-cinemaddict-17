@@ -1,4 +1,4 @@
-import { getRandomInteger, getRandomIndex, generateSentences } from '../util.js';
+import { getRandomInteger, getRandomIndex, generateSentences } from '../utils/common.js';
 import { MAX_COMMENT_ID, MAX_SENTENCES, EMOJIS } from '../const.js';
 
 const generateComment = () => ({
