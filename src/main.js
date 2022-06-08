@@ -1,19 +1,19 @@
-import FilmsSectionPresenter from './presenter/films-section-presenter.js';
-import FilmCardsModel from './model/film-cards-model.js';
-import UserTitleView from './view/user-title-view.js';
-import NavigationView from './view/navigation-view.js';
-import FiltersView from './view/filters-view.js';
-import { render } from './render.js';
+import {render} from './framework/render.js';
+import ProfileView from './view/profile-view.js';
+import MainNavigationView from './view/main-navigation-view.js';
+import FooterStatisticsView from './view/footer-statistics-view.js';
+import FilmsPresenter from './presenter/films-presenter-section.js';
+import MovieModel from './model/film-model.js';
 
-const pageBody = document.querySelector('body');
-const pageHeaderSection = pageBody.querySelector('.header');
-const pageMainSection = pageBody.querySelector('.main');
+const pageHeader = document.querySelector('.header');
+const pageMain = document.querySelector('.main');
+const pageFooter = document.querySelector('.footer');
 
-const filmCardsModel = new FilmCardsModel();
-const filmsSectionPresenter = new FilmsSectionPresenter(pageMainSection, pageBody, filmCardsModel);
+const movieModel = new MovieModel();
+const containerFilmsPresenter = new FilmsPresenter(pageMain, movieModel);
 
-render(new UserTitleView(), pageHeaderSection);
-render(new NavigationView(), pageMainSection);
-render(new FiltersView(), pageMainSection);
+render(new ProfileView, pageHeader);
+render(new MainNavigationView, pageMain);
+render(new FooterStatisticsView, pageFooter);
 
-filmsSectionPresenter.init();
+containerFilmsPresenter.init();

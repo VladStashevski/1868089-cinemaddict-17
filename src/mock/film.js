@@ -1,54 +1,129 @@
-import { getRandomInteger, getRandomIndex, getRandomFloat, getRandomIntegerArray, generateSentences } from '../util.js';
-import { MAX_COMMENT_ID, MAX_COMMENTS, MAX_SENTENCES, MOCK_TITLES } from '../const.js';
+import {getRandomInteger} from '../utils/common.js';
+import CommentsModel from '../model/comments-model.js';
 
-const MAX_FILM_ID = 100;
-const MAX_RATING = 10;
-const MAX_AGE = 18;
-const MIN_RUNTIME = 60;
-const MAX_RUNTIME = 240;
-const MIN_YEAR = 1940;
-const MAX_YEAR = 2022;
+const titles = [
+  'Made for Each other',
+  'Popeye meets sinbad',
+  'Sagebrush Trail',
+  'Santa Claus Conquers the Martians',
+  'The dance of life',
+  'The great flamarion',
+  'The Man with the Golden Arm'
+];
 
-const getPosterURLFromTitle = (title) => `images/posters/${  title.replace(/ /gi, '-').toLowerCase()  }.jpg`;
+const description = [
+  'Oscar-winning film, a war drama about two young people, from the creators of timeless classic',
+  'Nu, Pogodi!',
+  'and',
+  'Alice in Wonderland',
+  'with the best fight scenes since Bruce Lee.'
+];
 
-const generateFilm = () => {
-  const commentQuantity = getRandomInteger(0, MAX_COMMENTS);
-  const title = getRandomIndex(MOCK_TITLES);
-  const poster = getPosterURLFromTitle(title);
+const postersSrc = [
+  'images/posters/made-for-each-other.png',
+  'images/posters/popeye-meets-sinbad.png',
+  'images/posters/sagebrush-trail.jpg',
+  'images/posters/santa-claus-conquers-the-martians.jpg',
+  'images/posters/the-dance-of-life.jpg',
+  'images/posters/the-great-flamarion.jpg',
+  'images/posters/the-man-with-the-golden-arm.jpg'
+];
 
+const actors = [
+  'Morgan Freeman',
+  'Carole Lombard',
+  'James Stewart',
+  'Charles Coburn',
+  'Frank Sinatra'
+];
+
+const genreFilm = [
+  'Comedy',
+  'Triller',
+  'Adventure',
+  'Detective',
+  'Melodrama'
+];
+
+const country = [
+  'Russia',
+  'Finland',
+  'Germany',
+  'Norway',
+  'Sweden'
+];
+
+const directors = [
+  'Tom Ford',
+  'Frank Dorabont',
+  'Stiven Spilberg',
+  'Kventin Torantino',
+  'David Fincher'
+];
+
+const writers = [
+  'Takeshi Kitano',
+  'Jim Uls',
+  'Hayao Midziyaki',
+  'Guy Ritchie',
+  'Ivan Atkinson'
+];
+
+const dates = [
+  '2019-04-12T16:12:32.554Z',
+  '2019-03-12T16:12:32.554Z',
+  '2019-04-12T16:10:32.554Z',
+  '2020-04-12T16:12:32.554Z',
+  '2020-04-12T16:12:32.554Z'
+];
+
+const timeFilms = [
+  90,55,70,48,84,160
+];
+
+const getRuntime = (offer) => {
+  const runtime = [];
+  for (let i = 0; i < offer.length; i++) {
+    if(offer[i] % 60 === 0) {
+      runtime.push(`${offer[i]/60}h`);
+    }
+    runtime.push(`${Math.ceil(offer[i]/60)}h ${offer[i] % 60}m`);
+  }
+  return runtime[getRandomInteger(0, runtime.length - 1)];
+};
+
+const commentsList = new CommentsModel();
+
+export const genetateMovieCard = () => {
+  const id = getRandomInteger(1, 5);
   return {
-    id: String(getRandomInteger(0, MAX_FILM_ID)),
-    comments: getRandomIntegerArray(commentQuantity, MAX_COMMENT_ID),
-    filmInfo: {
-      title: title,
-      alternativeTitle: 'Laziness Who Sold Themselves',
-      totalRating: String(getRandomFloat(0, MAX_RATING)),
-      poster: poster,
-      ageRating: getRandomInteger(0, MAX_AGE),
-      director: 'Tom Ford',
-      writers: [
-        'Takeshi Kitano'
-      ],
-      actors: [
-        'Morgan Freeman'
-      ],
-      release: {
-        date: `${getRandomInteger(MIN_YEAR, MAX_YEAR)}-05-11T00:00:00.000Z`,
-        releaseCountry: 'Finland'
+
+    'id': id,
+    'comments': [
+      ...commentsList.getCommentsById(id)
+    ],
+    'filmInfo': {
+      'title': titles[getRandomInteger(0, 5)],
+      'alternativeTitle': 'Laziness Who Sold Themselves',
+      'totalRating': getRandomInteger(0, 10),
+      'poster': `${postersSrc[getRandomInteger(0, 5)]}`,
+      'ageRating': getRandomInteger(0, 10),
+      'director': directors[getRandomInteger(0, 5)],
+      'writers': writers.slice(0,[getRandomInteger(1, actors.length)]),
+      'actors': actors.slice(0,[getRandomInteger(0, actors.length - 1)]),
+      'release': {
+        'date': dates[getRandomInteger(0, 5)],
+        'releaseCountry': country.slice(0,[getRandomInteger(0, country.length - 1)])
       },
-      runtime: getRandomInteger(MIN_RUNTIME, MAX_RUNTIME),
-      genre: [
-        'Comedy',
-        'Thriller'
-      ],
-      description: generateSentences(getRandomInteger(1, MAX_SENTENCES))
+      'runtime': getRuntime(timeFilms),
+      'genre': genreFilm.slice().splice(getRandomInteger(0, genreFilm.length - 1),[getRandomInteger(1, 2)]),
+      'description': description[getRandomInteger(0, 5)],
     },
-    userDetails: {
-      watchlist: false,
-      alreadyWatched: true,
-      watchingDate: '2019-04-12T16:12:32.554Z',
-      favorite: false
+    'userDetails': {
+      'watchlist': false,
+      'alreadyWatched': true,
+      'watchingDate': '2019-04-12T16:12:32.554Z',
+      'favorite': false
     }
   };
 };
-export {generateFilm};
