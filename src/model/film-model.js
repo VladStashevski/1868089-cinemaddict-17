@@ -1,5 +1,5 @@
 import {CARD_COUNT, FilterType} from '../const.js';
-import {genetateMovieCard} from '../mock/movie-template.js';
+import {genetateMovieCard} from '../mock/film.js';
 
 export default class MovieModel {
   #movies = Array.from({length: CARD_COUNT}, genetateMovieCard);
