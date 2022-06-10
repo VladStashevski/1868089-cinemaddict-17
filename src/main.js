@@ -4,7 +4,7 @@ import ProfileView from './view/profile-view.js';
 import MainNavigationView from './view/main-navigation-view.js';
 import FooterStatisticsView from './view/footer-statistics-view.js';
 import FilmsPresenter from './presenter/main-presenter.js';
-import MovieModel from './model/movie-model.js';
+import MovieModel from './model/film-model.js';
 
 const pageHeader = document.querySelector('.header');
 const pageMain = document.querySelector('.main');
