@@ -2,12 +2,12 @@ import {render, remove} from '../framework/render.js';
 import {SHOW_FILM_COUNT_STEP} from '../const.js';
 import FilmSectionView from '../view/film-section-view.js';
 import FilmContainerView from '../view/film-container-view.js';
-import LoadMoreButtonView from '../view/load-more-button-view.js';
-import NoFilmCardView from '../view/no-film-card-view.js';
-import SortView from '../view/sort-view.js';
+import LoadMoreButtonView from '../view/show-more-button-view.js';
+import NoFilmCardView from '../view/film-nocard-view.js';
+import SortView from '../view/filter-view.js';
 import FilmPresenter from './film-presenter.js';
 import {updateItem} from '../utils/common.js';
-import {sortFilmsByRating, sortFilmsByDate} from '../utils/task.js';
+import {sortFilmsByRating, sortFilmsByDate} from '../utils/tasks.js';
 import {SortType} from '../const.js';
 
 export default class FilmsPresenter {
