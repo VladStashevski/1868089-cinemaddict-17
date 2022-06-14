@@ -19,7 +19,7 @@ export default class FilmsPresenter {
   #sortComponent = new SortView();
 
   #sectionMovie = [];
-  #filmModel = null;
+  #movieModel = null;
   #filmListContainer = null;
   #renderedMovieCount = SHOW_FILM_COUNT_STEP;
 
@@ -27,14 +27,14 @@ export default class FilmsPresenter {
   #currentSortType = SortType.DEFAULT;
   #sourcedFilms = [];
 
-  constructor(filmListContainer, filmModel) {
+  constructor(filmListContainer, movieModel) {
     this.#filmListContainer = filmListContainer;
-    this.#filmModel = filmModel;
+    this.#movieModel = movieModel;
   }
 
   init = () => {
-    this.#sectionMovie = [...this.#filmModel.movie];
-    this.#sourcedFilms = [...this.#filmModel.movie];
+    this.#sectionMovie = [...this.#movieModel.movie];
+    this.#sourcedFilms = [...this.#movieModel.movie];
     this.#renderMovie();
   };
 
