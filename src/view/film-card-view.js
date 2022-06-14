@@ -67,6 +67,7 @@ export default class FilmCardView extends AbstractView {
   #clickHandler = (evt) => {
     evt.preventDefault();
     this._callback.click();
+    document.body.classList.add('hide-overflow');
   };
 
   setWatchlistClickHandler = (callback) => {
