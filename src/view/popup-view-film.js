@@ -1,5 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import {humanizeDueDate} from '../utils/tasks.js';
+import CommentPopupView from './popup-view-comment.js';
 
 const createFilmDetailsPopupTemplate = (movie) => {
 
@@ -18,8 +19,14 @@ const createFilmDetailsPopupTemplate = (movie) => {
         releaseCountry
       },
       ageRating
-    }
+    },
+    comments,
+    userDetails
   } = movie;
+
+  const getControlClassName = (option) => option
+    ? 'film-details__control-button--active'
+    : '';
 
   return (`
   <section class="film-details">
@@ -82,15 +89,20 @@ const createFilmDetailsPopupTemplate = (movie) => {
           </div>
         </div>
         <section class="film-details__controls">
-          <button type="button" class="film-details__control-button film-details__control-button--watchlist" id="watchlist" name="watchlist">Add to watchlist</button>
-          <button type="button" class="film-details__control-button film-details__control-button--active film-details__control-button--watched" id="watched" name="watched">Already watched</button>
-          <button type="button" class="film-details__control-button film-details__control-button--favorite" id="favorite" name="favorite">Add to favorites</button>
+          <button type="button" class="film-details__control-button film-details__control-button--watchlist ${getControlClassName(userDetails.watchlist)}" id="watchlist" name="watchlist">Add to watchlist</button>
+          <button type="button" class="film-details__control-button film-details__control-button--watched ${getControlClassName(userDetails.alreadyWatched)}" id="watched" name="watched">Already watched</button>
+          <button type="button" class="film-details__control-button film-details__control-button--favorite ${getControlClassName(userDetails.favorite)}" id="favorite" name="favorite">Add to favorites</button>
         </section>
       </div>
       <div class="film-details__bottom-container">
         <section class="film-details__comments-wrap">
-          <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">0</span></h3>
-          <ul class="film-details__comments-list"></ul>
+          <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${comments.length}</span></h3>
+          <ul class="film-details__comments-list">
+            ${comments.reduce((template, comment) => {
+      template += new CommentPopupView(comment).template;
+      return template;
+    }, '')}
+          </ul>
           <div class="film-details__new-comment">
             <div class="film-details__add-emoji-label"></div>
             <label class="film-details__comment-label">
@@ -141,5 +153,35 @@ export default class PopupFilmView extends AbstractView {
   #closeClickHandler = (evt) => {
     evt.preventDefault();
     this._callback.closeClick();
+  };
+
+  setWatchlistClickHandler = (callback) => {
+    this._callback.toWatchListClick = callback;
+    this.element.querySelector('.film-details__control-button--watchlist').addEventListener('click', this.#watchListClickHandler);
+  };
+
+  #watchListClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.toWatchListClick();
+  };
+
+  setAlreadyWatchedClickHandler = (callback) => {
+    this._callback.alreadyWatchedClick = callback;
+    this.element.querySelector('.film-details__control-button--watched').addEventListener('click', this.#alreadyWatchedClickHandler);
+  };
+
+  #alreadyWatchedClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.alreadyWatchedClick();
+  };
+
+  setFavoriteClickHandler = (callback) => {
+    this._callback.favoriteClick = callback;
+    this.element.querySelector('.film-details__control-button--favorite').addEventListener('click', this.#favoriteClickHandler);
+  };
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.favoriteClick();
   };
 }

@@ -4,6 +4,7 @@ const emptyMovieSection = () => (`
   <section class="films">
     <section class="films-list">
       <h2 class="films-list__title">There are no movies in our database</h2>
+
       <!--
         Значение отображаемого текста зависит от выбранного фильтра:
           * All movies – 'There are no movies in our database'
