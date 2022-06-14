@@ -7,8 +7,6 @@ const Mode = {
   OPENED: 'OPENED',
 };
 
-const body = document.querySelector('body');
-
 export default class FilmPresenter {
   #filmListContainer = null;
   #filmComponent = null;
@@ -38,17 +36,7 @@ export default class FilmPresenter {
     this.#filmComponent.setAlreadyWatchedClickHandler(this.#onAlreadyWatchedClick);
     this.#filmComponent.setFavoriteClickHandler(this.#onFavoriteClick);
 
-    this.#popupComponent.setFavoriteClickHandler(this.#onFavoriteClick);
-    this.#popupComponent.setWatchlistClickHandler(this.#onWatchListClick);
-    this.#popupComponent.setAlreadyWatchedClickHandler(this.#onAlreadyWatchedClick);
-
-    this.#filmComponent.setClickHandler(() => {
-      this.#openPopup(movie);
-    });
-
-    this.#popupComponent.setCloseClickHandler(() => {
-      this.#closePopup(movie);
-    });
+    this.#filmComponent.setClickHandler(this.#openPopup);
 
     if (prevFilmComponent === null) {
       render(this.#filmComponent, this.#filmListContainer);
@@ -61,10 +49,18 @@ export default class FilmPresenter {
 
     if (this.#mode === Mode.OPENED) {
       replace(this.#popupComponent, prevPopupComponent);
+      this.#initPopup();
     }
 
     remove(prevFilmComponent);
     remove(prevPopupComponent);
+  };
+
+  #initPopup = () => {
+    this.#popupComponent.setCloseClickHandler(this.#closePopup);
+    this.#popupComponent.setWatchlistClickHandler(this.#onWatchListClick);
+    this.#popupComponent.setAlreadyWatchedClickHandler(this.#onAlreadyWatchedClick);
+    this.#popupComponent.setFavoriteClickHandler(this.#onFavoriteClick);
   };
 
   destroy = () => {
@@ -75,29 +71,32 @@ export default class FilmPresenter {
   resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
       this.#closePopup();
+      this.#popupComponent.reset(this.#movie);
     }
   };
 
   #openPopup = () => {
-    render(this.#popupComponent, body);
-    body.classList.add('hide-overflow');
+    render(this.#popupComponent, document.body);
     document.addEventListener('keydown', this.#onEscKeyDown);
 
     this.#changeMode();
     this.#mode = Mode.OPENED;
+
+    this.#initPopup();
   };
 
   #closePopup = () => {
     remove(this.#popupComponent);
-    body.classList.remove('hide-overflow');
     document.removeEventListener('keydown', this.#onEscKeyDown);
 
     this.#mode = Mode.DEFAULT;
+    this.#popupComponent.reset(this.#movie);
   };
 
   #onEscKeyDown = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
+      document.body.classList.remove('hide-overflow');
       this.#closePopup();
     }
   };
