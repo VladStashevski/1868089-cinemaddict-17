@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizeDueDate} from '../utils/tasks.js';
 import CommentPopupView from './popup-view-comment.js';
 
@@ -21,8 +21,17 @@ const createFilmDetailsPopupTemplate = (movie) => {
       ageRating
     },
     comments,
-    userDetails
+    userDetails,
+    emotionId
   } = movie;
+
+  const createEmotion = () => (emotionId)
+    ? `<img src="./images/emoji/${emotionId.split('-')[1]}.png" width="55" height="55" alt="emoji">`
+    : '';
+
+  const createDescription = () => (description)
+    ? `${description}`
+    : '';
 
   const getControlClassName = (option) => option
     ? 'film-details__control-button--active'
@@ -104,9 +113,13 @@ const createFilmDetailsPopupTemplate = (movie) => {
     }, '')}
           </ul>
           <div class="film-details__new-comment">
-            <div class="film-details__add-emoji-label"></div>
+            <div class="film-details__add-emoji-label">
+              ${createEmotion()}
+            </div>
             <label class="film-details__comment-label">
-              <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>
+              <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">
+                ${createDescription()}
+              </textarea>
             </label>
             <div class="film-details__emoji-list">
               <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile">
@@ -133,17 +146,50 @@ const createFilmDetailsPopupTemplate = (movie) => {
   </section>`);
 };
 
-export default class PopupFilmView extends AbstractView {
-  #movie = null;
+export default class PopupFilmView extends AbstractStatefulView {
 
-  constructor(movie) {
+  constructor (movie) {
     super();
-    this.#movie = movie;
+    this._state = PopupFilmView.parseCommentToState(movie);
+
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createFilmDetailsPopupTemplate(this.#movie);
+    return createFilmDetailsPopupTemplate(this._state);
   }
+
+  #textInputHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      comment: evt.target.value,
+    });
+  };
+
+  #emojiChangeHandler = (evt) => {
+    if (evt.target.nodeName === 'INPUT') {
+      evt.preventDefault();
+      const scrollPosition = this.element.scrollTop;
+      this.updateElement({
+        emotionId: evt.target.id,
+      });
+      this.element.scrollTop = scrollPosition;
+    }
+  };
+
+  #setInnerHandlers = () => {
+    this.element.querySelector('.film-details__emoji-list')
+      .addEventListener('click', this.#emojiChangeHandler);
+
+    this.element.querySelector('.film-details__comment-input')
+      .addEventListener('input', this.#textInputHandler);
+  };
+
+  reset = (movie) => {
+    this.updateElement(
+      PopupFilmView.parseCommentToState(movie),
+    );
+  };
 
   setCloseClickHandler = (callback) => {
     this._callback.closeClick = callback;
@@ -153,6 +199,7 @@ export default class PopupFilmView extends AbstractView {
   #closeClickHandler = (evt) => {
     evt.preventDefault();
     this._callback.closeClick();
+    document.body.classList.remove('hide-overflow');
   };
 
   setWatchlistClickHandler = (callback) => {
@@ -184,4 +231,16 @@ export default class PopupFilmView extends AbstractView {
     evt.preventDefault();
     this._callback.favoriteClick();
   };
+
+  _restoreHandlers = () => {
+    this.#setInnerHandlers();
+
+    this.setCloseClickHandler(this._callback.closeClick);
+    this.setWatchlistClickHandler(this._callback.toWatchListClick);
+    this.setAlreadyWatchedClickHandler(this._callback.alreadyWatchedClick);
+    this.setFavoriteClickHandler(this._callback.favoriteClick);
+  };
+
+  static parseCommentToState = (movie) => ({...movie, emotionId: null});
+  static parseStateToComment = (state) => ({...state});
 }
