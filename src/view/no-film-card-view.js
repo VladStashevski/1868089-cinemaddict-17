@@ -3,12 +3,12 @@ import {FilterType} from '../const.js';
 
 const NoFilmCardTextType = {
   [FilterType.ALL]: 'There are no movies in our database',
-  [FilterType.WATCHLIST]: 'There are no movies in our watchlist',
-  [FilterType.HISTORY]: 'There are no watched movies',
+  [FilterType.WATCHLIST]: 'There are no movies to watch now',
+  [FilterType.HISTORY]: 'There are no watched movies now',
   [FilterType.FAVORITES]: 'There are no favorite movies now',
 };
 
-const emptyFilmSection = (filterType) => {
+const emptyMovieSection = (filterType) => {
   const noFilmCardTextValue = NoFilmCardTextType[filterType];
 
   return (`
@@ -26,6 +26,6 @@ export default class NoFilmCardView extends AbstractView {
   }
 
   get template() {
-    return emptyFilmSection(this.#filterType);
+    return emptyMovieSection(this.#filterType);
   }
 }
