@@ -15,7 +15,7 @@ export default class FilmPresenter {
   #changeData = null;
   #changeMode = null;
 
-  #film = null;
+  #movie = null;
   #mode = Mode.DEFAULT;
 
   constructor(filmListContainer, changeData, changeMode) {
@@ -32,8 +32,8 @@ export default class FilmPresenter {
     return this.#mode === Mode.DEFAULT;
   }
 
-  get filmId() {
-    return this.#film.id;
+  get movieId() {
+    return this.#movie.id;
   }
 
   //Добавим метод для частичной очистки компонента.  Иными словами, не уничтожаем модальное окно.
@@ -41,14 +41,14 @@ export default class FilmPresenter {
     remove(this.#filmComponent);
   };
 
-  init = (film) => {
-    this.#film = film;
+  init = (movie) => {
+    this.#movie = movie;
 
     const prevFilmComponent = this.#filmComponent;
     const prevPopupComponent = this.#popupComponent;
 
-    this.#filmComponent = new FilmCardView(film);
-    this.#popupComponent = new PopupFilmView(film);
+    this.#filmComponent = new FilmCardView(movie);
+    this.#popupComponent = new PopupFilmView(movie);
 
     this.#filmComponent.setWatchlistClickHandler(this.#onWatchListClick);
     this.#filmComponent.setAlreadyWatchedClickHandler(this.#onAlreadyWatchedClick);
@@ -91,7 +91,7 @@ export default class FilmPresenter {
   resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
       this.#closePopup();
-      this.#popupComponent.reset(this.#film);
+      this.#popupComponent.reset(this.#movie);
     }
   };
 
@@ -110,7 +110,7 @@ export default class FilmPresenter {
     document.removeEventListener('keydown', this.#onEscKeyDown);
 
     this.#mode = Mode.DEFAULT;
-    this.#popupComponent.reset(this.#film);
+    this.#popupComponent.reset(this.#movie);
   };
 
   #onEscKeyDown = (evt) => {
@@ -123,25 +123,25 @@ export default class FilmPresenter {
 
   #onWatchListClick = () => {
     this.#changeData(
-      UserAction.UPDATE_Film,
+      UserAction.UPDATE_MOVIE,
       UpdateType.MINOR,
-      {...this.#film, userDetails: {...this.#film.userDetails, watchlist: !this.#film.userDetails.watchlist}},
+      {...this.#movie, userDetails: {...this.#movie.userDetails, watchlist: !this.#movie.userDetails.watchlist}},
     );
   };
 
   #onAlreadyWatchedClick = () => {
     this.#changeData(
-      UserAction.UPDATE_Film,
+      UserAction.UPDATE_MOVIE,
       UpdateType.MINOR,
-      {...this.#film, userDetails: {...this.#film.userDetails, alreadyWatched: !this.#film.userDetails.alreadyWatched}},
+      {...this.#movie, userDetails: {...this.#movie.userDetails, alreadyWatched: !this.#movie.userDetails.alreadyWatched}},
     );
   };
 
   #onFavoriteClick = () => {
     this.#changeData(
-      UserAction.UPDATE_Film,
+      UserAction.UPDATE_MOVIE,
       UpdateType.MINOR,
-      {...this.#film, userDetails: {...this.#film.userDetails, favorite: !this.#film.userDetails.favorite}},
+      {...this.#movie, userDetails: {...this.#movie.userDetails, favorite: !this.#movie.userDetails.favorite}},
     );
   };
 
