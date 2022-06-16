@@ -18,9 +18,9 @@ export default class FilmsPresenter {
   #sortComponent = null;
   #openedFilmPresenter = null;
 
-  #filmModel = null;
+  #movieModel = null;
   #filmListContainer = null;
-  #renderedFilmCount = SHOW_FILM_COUNT_STEP;
+  #renderedMovieCount = SHOW_FILM_COUNT_STEP;
 
   #filmPresenter = new Map();
   #currentSortType = SortType.DEFAULT;
@@ -28,49 +28,49 @@ export default class FilmsPresenter {
 
   #filterModel = null;
 
-  constructor(filmListContainer, filmModel, filterModel) {
+  constructor(filmListContainer, movieModel, filterModel) {
     this.#filmListContainer = filmListContainer;
-    this.#filmModel = filmModel;
+    this.#movieModel = movieModel;
     this.#filterModel = filterModel;
 
-    this.#filmModel.addObserver(this.#handleModelEvent);
+    this.#movieModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
-  get films() {
+  get movies() {
     this.#filterType = this.#filterModel.filter;
-    const films = this.#filmModel.films;
-    const filteredFilms = filter[this.#filterType](films);
+    const movies = this.#movieModel.movies;
+    const filteredMovies = filter[this.#filterType](movies);
 
     switch (this.#currentSortType) {
       case SortType.RATING:
-        return filteredFilms.sort(sortFilmsByRating);
+        return filteredMovies.sort(sortFilmsByRating);
       case SortType.DATE:
-        return filteredFilms.sort(sortFilmsByDate);
+        return filteredMovies.sort(sortFilmsByDate);
     }
 
-    return filteredFilms;
+    return filteredMovies;
   }
 
   init = () => {
-    this.#renderFilm();
+    this.#renderMovie();
   };
 
   #handleLoadMoreButtonClick = () => {
-    const filmCount = this.films.length;
-    const newRenderedFilmCount = Math.min(filmCount, this.#renderedFilmCount + SHOW_FILM_COUNT_STEP);
-    const films = this.films.slice(this.#renderedFilmCount, newRenderedFilmCount);
+    const movieCount = this.movies.length;
+    const newRenderedMovieCount = Math.min(movieCount, this.#renderedMovieCount + SHOW_FILM_COUNT_STEP);
+    const movies = this.movies.slice(this.#renderedMovieCount, newRenderedMovieCount);
 
-    this.#renderFilms(films);
-    this.#renderedFilmCount = newRenderedFilmCount;
+    this.#renderFilms(movies);
+    this.#renderedMovieCount = newRenderedMovieCount;
 
-    if (this.#renderedFilmCount >= filmCount) {
+    if (this.#renderedMovieCount >= movieCount) {
       remove(this.#loadMoreButtonComponent);
     }
   };
 
-  #renderFilms = (films) => {
-    films.forEach((element) => this.#createFilm(element));
+  #renderFilms = (movies) => {
+    movies.forEach((element) => this.#createFilm(element));
   };
 
   #renderNoFilms = () => {
@@ -85,8 +85,8 @@ export default class FilmsPresenter {
     render(this.#loadMoreButtonComponent, this.#filmSection.element);
   };
 
-  #clearFilm = ({resetRenderedFilmCount = false, resetSortType = false} = {}) => {
-    const filmCount = this.film.length;
+  #clearFilm = ({resetRenderedMovieCount = false, resetSortType = false} = {}) => {
+    const movieCount = this.movies.length;
 
     this.#filmPresenter.forEach((presenter) => {
       if (presenter.isOpened) {
@@ -107,10 +107,10 @@ export default class FilmsPresenter {
       remove(this.#noFilmComponent);
     }
 
-    if (resetRenderedFilmCount) {
-      this.#renderedFilmCount = SHOW_FILM_COUNT_STEP;
+    if (resetRenderedMovieCount) {
+      this.#renderedMovieCount = SHOW_FILM_COUNT_STEP;
     } else {
-      this.#renderedFilmCount = Math.min(filmCount, this.#renderedFilmCount);
+      this.#renderedMovieCount = Math.min(movieCount, this.#renderedMovieCount);
     }
 
     if (resetSortType) {
@@ -124,14 +124,14 @@ export default class FilmsPresenter {
 
   #handleViewAction = (actionType, updateType, update) => {
     switch (actionType) {
-      case UserAction.UPDATE_Film:
-        this.#filmModel.updateFilm(updateType, update);
+      case UserAction.UPDATE_MOVIE:
+        this.#movieModel.updateFilm(updateType, update);
         break;
       case UserAction.ADD_COMMENT:
-        this.#filmModel.updateFilm(updateType, update);
+        this.#movieModel.updateFilm(updateType, update);
         break;
       case UserAction.DELETE_COMMENT:
-        this.#filmModel.updateFilm(updateType, update);
+        this.#movieModel.updateFilm(updateType, update);
         break;
     }
   };
@@ -143,19 +143,19 @@ export default class FilmsPresenter {
         break;
       case UpdateType.MINOR:
         this.#clearFilm();
-        this.#renderFilm();
+        this.#renderMovie();
         break;
       case UpdateType.MAJOR:
-        this.#clearFilm({resetRenderedFilmCount: true, resetSortType: true});
-        this.#renderFilm();
+        this.#clearFilm({resetRenderedMovieCount: true, resetSortType: true});
+        this.#renderMovie();
         break;
     }
   };
 
-  #createFilm = (film) => {
+  #createFilm = (movie) => {
     const filmPresenter = new FilmPresenter(this.#filmContainer.element, this.#handleViewAction, this.#handleModeChange);
-    filmPresenter.init(film);
-    this.#filmPresenter.set(film.id, filmPresenter);
+    filmPresenter.init(movie);
+    this.#filmPresenter.set(movie.id, filmPresenter);
   };
 
   #handleSortTypeChange = (sortType) => {
@@ -164,9 +164,9 @@ export default class FilmsPresenter {
     }
 
     this.#currentSortType = sortType;
-    this.#clearFilm({resetRenderedFilmCount: true});
+    this.#clearFilm({resetRenderedMovieCount: true});
 
-    this.#renderFilm();
+    this.#renderMovie();
   };
 
   #renderSort = () => {
@@ -187,17 +187,17 @@ export default class FilmsPresenter {
     if (!this.#openedFilmPresenter.isOpened) {
       this.#openedFilmPresenter = null;
     }
-    const currentModalData = this.#filmModel.films.find((film) => film.id === this.#openedFilmPresenter?.filmId);
+    const currentModalData = this.#movieModel.movies.find((movie) => movie.id === this.#openedFilmPresenter?.movieId);
     if (currentModalData) {
       this.#openedFilmPresenter.init(currentModalData);
     }
   };
 
-  #renderFilm = () => {
-    const films = this.films;
-    const filmCount = films.length;
+  #renderMovie = () => {
+    const movies = this.movies;
+    const movieCount = movies.length;
 
-    if (filmCount === 0) {
+    if (movieCount === 0) {
       this.#renderNoFilms();
       return;
     }
@@ -208,9 +208,9 @@ export default class FilmsPresenter {
 
     this.#updateOpenedModal();
 
-    this.#renderFilms(films.slice(0, Math.min(filmCount, this.#renderedFilmCount)));
+    this.#renderFilms(movies.slice(0, Math.min(movieCount, this.#renderedMovieCount)));
 
-    if (filmCount > this.#renderedFilmCount) {
+    if (movieCount > this.#renderedMovieCount) {
       this.#renderLoadMoreButton();
     }
   };
