@@ -1,7 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import {humanizeDueDate, humanizeDurationFormat} from '../utils/task.js';
 
-const createFilmCardTemplate = (film) => {
+const createFilmCardTemplate = (movie) => {
 
   const {
     filmInfo: {
@@ -17,7 +17,7 @@ const createFilmCardTemplate = (film) => {
     },
     comments,
     userDetails
-  } = film;
+  } = movie;
 
   const getControlClassName = (option) => option
     ? 'film-card__controls-item--active'
@@ -46,15 +46,15 @@ const createFilmCardTemplate = (film) => {
 };
 
 export default class FilmCardView extends AbstractView {
-  #film = null;
+  #movie = null;
 
-  constructor(film) {
+  constructor(movie) {
     super();
-    this.#film = film;
+    this.#movie = movie;
   }
 
   get template() {
-    return createFilmCardTemplate(this.#film);
+    return createFilmCardTemplate(this.#movie);
   }
 
   setClickHandler = (callback) => {
