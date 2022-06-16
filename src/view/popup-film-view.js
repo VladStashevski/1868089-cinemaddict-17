@@ -3,7 +3,7 @@ import {humanizeFormatDate, humanizeDurationFormat} from '../utils/task.js';
 import {createComment} from './popup-comment-view.js';
 import {commentsEmotion, generateComment} from '../mock/comments-template.js';
 
-const createFilmDetailsPopupTemplate = (film) => {
+const createFilmDetailsPopupTemplate = (movie) => {
 
   const {
     filmInfo: {
@@ -26,7 +26,7 @@ const createFilmDetailsPopupTemplate = (film) => {
     userDetails,
     commentEmoji,
     commentInput
-  } = film;
+  } = movie;
 
   const releaseDate = humanizeFormatDate(date, 'D MMMM YYYY');
 
@@ -153,9 +153,9 @@ const createFilmDetailsPopupTemplate = (film) => {
 
 export default class PopupFilmView extends AbstractStatefulView {
 
-  constructor (film) {
+  constructor (movie) {
     super();
-    this._state = PopupFilmView.parseCommentToState(film);
+    this._state = PopupFilmView.parseCommentToState(movie);
 
     this.#setInnerHandlers();
 
@@ -192,9 +192,9 @@ export default class PopupFilmView extends AbstractStatefulView {
       .addEventListener('input', this.#textInputHandler);
   };
 
-  reset = (film) => {
+  reset = (movie) => {
     this.updateElement(
-      PopupFilmView.parseCommentToState(film),
+      PopupFilmView.parseCommentToState(movie),
     );
   };
 
@@ -290,24 +290,24 @@ export default class PopupFilmView extends AbstractStatefulView {
     this.setAddCommentHandler(this._callback.addComment);
   };
 
-  static parseCommentToState = (film) => ({...film, commentEmoji: null, commentInput: null});
+  static parseCommentToState = (movie) => ({...movie, commentEmoji: null, commentInput: null});
 
   static parseStateToComment = (state) => {
-    const film = { ...state };
+    const movie = { ...state };
 
-    if (film.commentEmoji && film.commentInput) {
+    if (movie.commentEmoji && movie.commentInput) {
       const newComment = {
         ...generateComment(),
-        emotion: `${film.commentEmoji}`,
-        comment: film.commentInput
+        emotion: `${movie.commentEmoji}`,
+        comment: movie.commentInput
       };
 
-      film.comments = [...film.comments, newComment];
+      movie.comments = [...movie.comments, newComment];
     }
 
-    delete film.commentEmoji;
-    delete film.commentInput;
+    delete movie.commentEmoji;
+    delete movie.commentInput;
 
-    return film;
+    return movie;
   };
 }
