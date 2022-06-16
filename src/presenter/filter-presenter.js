@@ -6,42 +6,42 @@ import {FilterType, UpdateType} from '../const.js';
 export default class FilterPresenter {
   #filterContainer = null;
   #filterModel = null;
-  #filmModel = null;
+  #movieModel = null;
 
   #filterComponent = null;
 
-  constructor(filterContainer, filterModel, filmModel) {
+  constructor(filterContainer, filterModel, movieModel) {
     this.#filterContainer = filterContainer;
     this.#filterModel = filterModel;
-    this.#filmModel = filmModel;
+    this.#movieModel = movieModel;
 
-    this.#filmModel.addObserver(this.#handleModelEvent);
+    this.#movieModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get filters() {
-    const films = this.#filmModel.films;
+    const movies = this.#movieModel.movies;
 
     return [
       {
         type: FilterType.ALL,
         name: 'All movies',
-        count: filter[FilterType.ALL](films).length,
+        count: filter[FilterType.ALL](movies).length,
       },
       {
         type: FilterType.WATCHLIST,
         name: 'Watchlist',
-        count: filter[FilterType.WATCHLIST](films).length,
+        count: filter[FilterType.WATCHLIST](movies).length,
       },
       {
         type: FilterType.HISTORY,
         name: 'History',
-        count: filter[FilterType.HISTORY](films).length,
+        count: filter[FilterType.HISTORY](movies).length,
       },
       {
         type: FilterType.FAVORITES,
         name: 'Favorites',
-        count: filter[FilterType.FAVORITES](films).length,
+        count: filter[FilterType.FAVORITES](movies).length,
       },
     ];
   }
