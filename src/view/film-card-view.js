@@ -1,7 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {humanizeDueDate} from '../utils/tasks.js';
+import {humanizeDueDate, humanizeDurationFormat} from '../utils/task.js';
 
-const createFilmCardTemplate = (movie) => {
+const createFilmCardTemplate = (film) => {
 
   const {
     filmInfo: {
@@ -17,7 +17,7 @@ const createFilmCardTemplate = (movie) => {
     },
     comments,
     userDetails
-  } = movie;
+  } = film;
 
   const getControlClassName = (option) => option
     ? 'film-card__controls-item--active'
@@ -30,7 +30,7 @@ const createFilmCardTemplate = (movie) => {
       <p class="film-card__rating">${totalRating}</p>
       <p class="film-card__info">
         <span class="film-card__year">${humanizeDueDate(date)}</span>
-        <span class="film-card__duration">${runtime}</span>
+        <span class="film-card__duration">${humanizeDurationFormat(runtime)}</span>
         <span class="film-card__genre">${genre}</span>
       </p>
       <img src="./${poster}" alt="${title}" class="film-card__poster">
@@ -46,15 +46,15 @@ const createFilmCardTemplate = (movie) => {
 };
 
 export default class FilmCardView extends AbstractView {
-  #movie = null;
+  #film = null;
 
-  constructor(movie) {
+  constructor(film) {
     super();
-    this.#movie = movie;
+    this.#film = film;
   }
 
   get template() {
-    return createFilmCardTemplate(this.#movie);
+    return createFilmCardTemplate(this.#film);
   }
 
   setClickHandler = (callback) => {
@@ -100,4 +100,3 @@ export default class FilmCardView extends AbstractView {
     this._callback.favoriteClick();
   };
 }
-
