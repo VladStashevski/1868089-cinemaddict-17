@@ -9,13 +9,6 @@ const FilterType = {
   FAVORITES: 'favorites'
 };
 
-const FilterName = {
-  [FilterType.ALL]: 'All movies',
-  [FilterType.WATCHLIST]: 'Watchlist',
-  [FilterType.HISTORY]: 'History',
-  [FilterType.FAVORITES]: 'Favorites'
-};
-
 const SortType = {
   DEFAULT: 'default',
   DATE: 'date',
@@ -24,4 +17,16 @@ const SortType = {
 
 const SHOW_FILM_COUNT_STEP = 5;
 
-export {CARD_COUNT, COMMENT_COUNT, FilterType, FilterName, SHOW_FILM_COUNT_STEP, SortType};
+const UserAction = {
+  UPDATE_FILM: 'UPDATE_FILM',
+  ADD_COMMENT: 'ADD_COMMENT',
+  DELETE_COMMENT: 'DELETE_COMMENT'
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+export {CARD_COUNT, COMMENT_COUNT, FilterType, SHOW_FILM_COUNT_STEP, SortType, UserAction, UpdateType};
