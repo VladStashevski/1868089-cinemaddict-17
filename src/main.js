@@ -1,23 +1,33 @@
 import {render} from './framework/render.js';
-import ProfileView from './view/profile-view.js';
-import FooterStatisticsView from './view/footer-statistics-view.js';
-import FilmsPresenter from './presenter/film-details-presenter.js';
+import ProfileButtonView from './view/profile-view.js';
+import StatisticsView from './view/footer-statistics-view.js';
+import FilmsPresenter from './presenter/films-list-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
-import MovieModel from './model/films-model.js';
+import FilmsModel from './model/films-model.js';
 import FilterModel from './model/filter-model.js';
+import CommentsModel from './model/comments-model.js';
+import FilmsApiService from './api/films-api-service.js';
+import CommentsApiService from './api/comments-api-service.js';
 
-const pageHeader = document.querySelector('.header');
-const pageMain = document.querySelector('.main');
-const pageFooter = document.querySelector('.footer');
+const AUTHORIZATION = 'Basic ikf1Leyz2gj3gjkire4';
+const END_POINT = 'https://17.ecmascript.pages.academy/cinemaddict';
 
-const movieModel = new MovieModel();
+const siteBodyElement = document.querySelector('body');
+const siteMainElement = siteBodyElement.querySelector('.main');
+const siteHeaderElement = siteBodyElement.querySelector('.header');
+const siteFooterElement = siteBodyElement.querySelector('.footer__statistics');
+
 const filterModel = new FilterModel();
-const containerFilmsPresenter = new FilmsPresenter(pageMain, movieModel, filterModel);
-const filterPresenter = new FilterPresenter(pageMain, filterModel, movieModel);
+const filmsModel = new FilmsModel(new FilmsApiService(END_POINT, AUTHORIZATION));
+const commentsModel = new CommentsModel(new CommentsApiService(END_POINT, AUTHORIZATION));
 
-render(new ProfileView, pageHeader);
+const filterPresenter = new FilterPresenter(siteMainElement, filterModel, filmsModel);
+const filmsPresenter = new FilmsPresenter(siteMainElement, filterModel, filmsModel, commentsModel);
 
-render(new FooterStatisticsView(movieModel.count), pageFooter);
-
-filterPresenter.init();
-containerFilmsPresenter.init();
+filmsPresenter.init();
+filmsModel.init()
+  .finally(() => {
+    filterPresenter.init();
+    render(new ProfileButtonView(filmsModel.films), siteHeaderElement);
+    render(new StatisticsView(filmsModel.films), siteFooterElement);
+  });
