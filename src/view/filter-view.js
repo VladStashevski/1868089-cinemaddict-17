@@ -1,26 +1,23 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
 const createFilterItemTemplate = (filter, currentFilterType) => {
-  const {type, name, count} = filter;
+  const {type, name, count, href} = filter;
 
-  return `<a
-    href='#${type}'
-    class="main-navigation__item
-    ${type === currentFilterType ? 'main-navigation__item--active' : ''}"
-    data-filter="${type}">
-      ${name} ${type === 'all' ? '' : `<span data-filter="${type}" class="main-navigation__item-count">${count}</span>`}
-    </a>`;
+  return (
+    `<a href="#${href}" class="main-navigation__item ${type === currentFilterType ? 'main-navigation__item--active' : ''}" data-filter-type="${type}">${name} ${type !== 'All' ? `<span class="main-navigation__item-count">${count}</span>` : ''}</a>`
+  );
 };
 
-const createFilterTemplate = (filters, currentFilterType) => {
-
-  const filterItemsTemplate = filters
+const createFilterTemplate = (filterItems, currentFilterType) => {
+  const filterItemsTemplate = filterItems
     .map((filter) => createFilterItemTemplate(filter, currentFilterType))
     .join('');
 
-  return `<nav class="main-navigation">
+  return (
+    `<nav class="main-navigation">
       ${filterItemsTemplate}
-  </nav>`;
+    </nav>`
+  );
 };
 
 export default class FilterView extends AbstractView {
@@ -44,16 +41,6 @@ export default class FilterView extends AbstractView {
 
   #filterTypeChangeHandler = (evt) => {
     evt.preventDefault();
-
-    const targetClassList = evt.target.classList;
-
-    if (targetClassList.contains('main-navigation__item-count')) {
-      this._callback.filterTypeChange(evt.target.parentNode.dataset.filter);
-      return;
-    }
-
-    if (targetClassList.contains('main-navigation__item')) {
-      this._callback.filterTypeChange(evt.target.dataset.filter);
-    }
+    this._callback.filterTypeChange(evt.target.dataset.filterType);
   };
 }
