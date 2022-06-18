@@ -5,7 +5,7 @@ const footerStatisticsElement = (movieCount) => (`
 `);
 
 export default class FooterStatisticsView extends AbstractView {
-  #movieCount = null;
+  #movieCount = 0;
 
   constructor(movieCount) {
     super();

@@ -14,3 +14,5 @@ export const generateComment = () => ({
   'date': '2019-05-11T16:12:32.554Z',
   'emotion': `${commentsEmotion[getRandomInteger(0, commentsEmotion.length-1)]}`
 });
+
+export {commentsEmotion};

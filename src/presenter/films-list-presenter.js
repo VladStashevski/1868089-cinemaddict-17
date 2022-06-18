@@ -1,6 +1,7 @@
 import {render, replace, remove} from '../framework/render.js';
 import FilmCardView from '../view/film-card-view.js';
-import PopupFilmView from '../view/popup-view-film.js';
+import PopupFilmView from '../view/popup-film-view.js';
+import {UserAction, UpdateType} from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -23,6 +24,23 @@ export default class FilmPresenter {
     this.#changeMode = changeMode;
   }
 
+  get isOpened() {
+    return this.#mode === Mode.OPENED;
+  }
+
+  get isClosed() {
+    return this.#mode === Mode.DEFAULT;
+  }
+
+  get movieId() {
+    return this.#movie.id;
+  }
+
+  //Добавим метод для частичной очистки компонента.  Иными словами, не уничтожаем модальное окно.
+  destroyOnlyCard = () => {
+    remove(this.#filmComponent);
+  };
+
   init = (movie) => {
     this.#movie = movie;
 
@@ -35,6 +53,8 @@ export default class FilmPresenter {
     this.#filmComponent.setWatchlistClickHandler(this.#onWatchListClick);
     this.#filmComponent.setAlreadyWatchedClickHandler(this.#onAlreadyWatchedClick);
     this.#filmComponent.setFavoriteClickHandler(this.#onFavoriteClick);
+
+    this.#popupComponent.setAddCommentHandler(this.#onAddComment);
 
     this.#filmComponent.setClickHandler(this.#openPopup);
 
@@ -102,14 +122,34 @@ export default class FilmPresenter {
   };
 
   #onWatchListClick = () => {
-    this.#changeData({...this.#movie, userDetails: {...this.#movie.userDetails, watchlist: !this.#movie.userDetails.watchlist}});
+    this.#changeData(
+      UserAction.UPDATE_MOVIE,
+      UpdateType.MINOR,
+      {...this.#movie, userDetails: {...this.#movie.userDetails, watchlist: !this.#movie.userDetails.watchlist}},
+    );
   };
 
   #onAlreadyWatchedClick = () => {
-    this.#changeData({...this.#movie, userDetails: {...this.#movie.userDetails, alreadyWatched: !this.#movie.userDetails.alreadyWatched}});
+    this.#changeData(
+      UserAction.UPDATE_MOVIE,
+      UpdateType.MINOR,
+      {...this.#movie, userDetails: {...this.#movie.userDetails, alreadyWatched: !this.#movie.userDetails.alreadyWatched}},
+    );
   };
 
   #onFavoriteClick = () => {
-    this.#changeData({...this.#movie, userDetails: {...this.#movie.userDetails, favorite: !this.#movie.userDetails.favorite}});
+    this.#changeData(
+      UserAction.UPDATE_MOVIE,
+      UpdateType.MINOR,
+      {...this.#movie, userDetails: {...this.#movie.userDetails, favorite: !this.#movie.userDetails.favorite}},
+    );
+  };
+
+  #onAddComment = (update) => {
+    this.#changeData(
+      UserAction.ADD_COMMENT,
+      UpdateType.PATCH,
+      update
+    );
   };
 }
