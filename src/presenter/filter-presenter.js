@@ -1,47 +1,51 @@
+import {render, replace, remove} from '../framework/render.js';
 import FilterView from '../view/filter-view.js';
-import {render, remove, replace} from '../framework/render.js';
 import {filter} from '../utils/filter.js';
 import {FilterType, UpdateType} from '../const.js';
 
 export default class FilterPresenter {
   #filterContainer = null;
   #filterModel = null;
-  #movieModel = null;
+  #filmsModel = null;
 
   #filterComponent = null;
 
-  constructor(filterContainer, filterModel, movieModel) {
+  constructor(filterContainer, filterModel, filmsModel) {
     this.#filterContainer = filterContainer;
     this.#filterModel = filterModel;
-    this.#movieModel = movieModel;
+    this.#filmsModel = filmsModel;
 
-    this.#movieModel.addObserver(this.#handleModelEvent);
+    this.#filmsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get filters() {
-    const movies = this.#movieModel.movies;
+    const films = this.#filmsModel.films;
 
     return [
       {
         type: FilterType.ALL,
         name: 'All movies',
-        count: filter[FilterType.ALL](movies).length,
+        count: '',
+        href: 'all',
       },
       {
         type: FilterType.WATCHLIST,
         name: 'Watchlist',
-        count: filter[FilterType.WATCHLIST](movies).length,
+        count: filter[FilterType.WATCHLIST](films).length,
+        href: 'watchlist',
       },
       {
         type: FilterType.HISTORY,
         name: 'History',
-        count: filter[FilterType.HISTORY](movies).length,
+        count: filter[FilterType.HISTORY](films).length,
+        href: 'history',
       },
       {
         type: FilterType.FAVORITES,
         name: 'Favorites',
-        count: filter[FilterType.FAVORITES](movies).length,
+        count: filter[FilterType.FAVORITES](films).length,
+        href: 'favorites',
       },
     ];
   }
