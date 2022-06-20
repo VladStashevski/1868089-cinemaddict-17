@@ -1,20 +1,31 @@
 import {render} from './framework/render.js';
-import {FilterType} from './const.js';
-import ProfileView from './view/profile-view.js';
-import MainNavigationView from './view/main-navigation-view.js';
-import FooterStatisticsView from './view/footer-statistics-view.js';
-import FilmsPresenter from './presenter/films-presenter.js';
-import FilmModel from './model/film-model.js';
+import ProfileButtonView from './view/profile-view.js';
+import StatisticsView from './view/footer-statistics-view.js';
+import FilmsPresenter from './presenter/films-list-presenter.js';
+import FilterPresenter from './presenter/filter-presenter.js';
+import FilmsModel from './model/films-model.js';
+import FilterModel from './model/filter-model.js';
+import CommentsModel from './model/comments-model.js';
+import FilmsApiService from './api/films-api-service.js';
+import CommentsApiService from './api/comments-api-service.js';
+import {AUTHORIZATION, END_POINT} from './api/config.js';
 
-const pageHeader = document.querySelector('.header');
-const pageMain = document.querySelector('.main');
-const pageFooter = document.querySelector('.footer');
+const siteBodyElement = document.querySelector('body');
+const siteMainElement = siteBodyElement.querySelector('.main');
+const siteHeaderElement = siteBodyElement.querySelector('.header');
+const siteFooterElement = siteBodyElement.querySelector('.footer__statistics');
 
-const filmModel = new FilmModel();
-const containerFilmsPresenter = new FilmsPresenter(pageMain, filmModel);
+const filterModel = new FilterModel();
+const filmsModel = new FilmsModel(new FilmsApiService(END_POINT, AUTHORIZATION));
+const commentsModel = new CommentsModel(new CommentsApiService(END_POINT, AUTHORIZATION));
 
-render(new ProfileView, pageHeader);
-render(new MainNavigationView(filmModel.filtered, FilterType.ALL), pageMain);
-render(new FooterStatisticsView(filmModel.count), pageFooter);
+const filterPresenter = new FilterPresenter(siteMainElement, filterModel, filmsModel);
+const filmsPresenter = new FilmsPresenter(siteMainElement, filterModel, filmsModel, commentsModel);
 
-containerFilmsPresenter.init();
+filmsPresenter.init();
+filmsModel.init()
+  .finally(() => {
+    filterPresenter.init();
+    render(new ProfileButtonView(filmsModel.films), siteHeaderElement);
+    render(new StatisticsView(filmsModel.films), siteFooterElement);
+  });
