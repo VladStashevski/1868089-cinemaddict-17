@@ -16,6 +16,11 @@
     "start": "webpack serve --mode development --open"
   },
   "devDependencies": {
+    "@babel/core": "7.17.9",
+    "@babel/preset-env": "7.16.11",
+    "babel-loader": "8.2.4",
+    "copy-webpack-plugin": "10.2.4",
+    "css-loader": "6.7.1",
     "eslint": "8.13.0",
     "eslint-config-htmlacademy": "5.1.2"
   },
@@ -23,11 +28,6 @@
     "node": "16"
   },
   "dependencies": {
-    "@babel/core": "^7.17.9",
-    "@babel/preset-env": "^7.16.11",
-    "babel-loader": "^8.2.4",
-    "copy-webpack-plugin": "^10.2.4",
-    "css-loader": "^6.7.1",
     "dayjs": "1.11.1",
     "flatpickr": "^4.6.13",
     "he": "^1.2.0",
