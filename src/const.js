@@ -1,30 +1,23 @@
 export const FilterType = {
-  ALL: 'All',
-  WATCHLIST: 'Watchlist',
-  HISTORY: 'History',
-  FAVORITES: 'Favorites',
+  ALL: 'All movies',
+  WATCHLIST: 'watchlist',
+  HISTORY: 'history',
+  FAVORITE: 'favorite'
 };
 
-export const NoFilmCardTextType = {
+export const NoFilmsTextType = {
   [FilterType.ALL]: 'There are no movies in our database',
-  [FilterType.WATCHLIST]: 'There are no movies in our watchlist',
-  [FilterType.HISTORY]: 'There are no watched movies',
-  [FilterType.FAVORITES]: 'There are no favorite movies now',
+  [FilterType.WATCHLIST]: 'There are no movies to watch now',
+  [FilterType.HISTORY]: 'There are no watched movies now',
+  [FilterType.FAVORITE]: 'There are no favorite movies now',
 };
 
-export const Time = {
-  HOUR: 60,
-  DAY: 1440,
-  MONTH: 43200,
-  YEAR: 525600,
+export const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
 };
 
-export const SHAKE_CLASS_NAME = 'shake';
-export const SHAKE_ANIMATION_TIMEOUT = 600;
-export const CARDS_PER_STEP = 5;
-export const body = document.querySelector('body');
-
-export const EMOJIS = [
+export const EMOTIONS = [
   'smile',
   'sleeping',
   'puke',
@@ -34,10 +27,12 @@ export const EMOJIS = [
 export const SortType = {
   DEFAULT: 'default',
   DATE: 'date',
-  RATING: 'rating',
+  RATING: 'rating'
 };
 
 export const Method = {
+  GET: 'GET',
+  PUT: 'PUT',
   POST: 'POST',
   DELETE: 'DELETE',
 };
@@ -46,10 +41,23 @@ export const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
-  INIT: 'INIT',
+  INIT: 'INIT'
 };
 
-export const TimeLimit = {
-  LOWER_LIMIT: 350,
-  UPPER_LIMIT: 1000,
+export const UserAction = {
+  UPDATE_FILM: 'UPDATE_MOVIE',
+  ADD_COMMENT: 'ADD_COMMENT',
+  DELETE_COMMENT: 'DELETE_COMMENT'
+};
+
+export const UserRank = {
+  NOVICE: 'Novice',
+  FAN: 'Fan',
+  FILM_BUFF: 'Movie Buff'
+};
+
+export const UserHistory = {
+  NOVICE: 1,
+  FAN: 11,
+  FILM_BUFF: 21
 };
