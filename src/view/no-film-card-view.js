@@ -1,16 +1,15 @@
-import AbstractView from '../framework/view/abstract-view.js';
-import {NoFilmCardTextType} from '../const.js';
+import AbstractView from '../framework/view/abstract-view';
+import {NoFilmsTextType} from '../const';
 
-const createNoFilmTemplate = (filterType) => {
-  const noFilmCardTextValue = NoFilmCardTextType[filterType];
+const createFilmsListEmptyTemplate = (filterType) => {
+  const noFilmsTextValue = NoFilmsTextType[filterType];
 
   return (
-    `<section class="films-list"><h2 class="films-list__title">
-      ${noFilmCardTextValue}
-    </h2></section>`);
+    `<h2 class="films-list__title">${noFilmsTextValue}</h2>`
+  );
 };
 
-export default class NoFilmCardView extends AbstractView {
+export default class FilmsListEmptyView extends AbstractView {
   #filterType = null;
 
   constructor(filterType) {
@@ -19,7 +18,6 @@ export default class NoFilmCardView extends AbstractView {
   }
 
   get template() {
-    return createNoFilmTemplate(this.#filterType);
+    return createFilmsListEmptyTemplate(this.#filterType);
   }
 }
-

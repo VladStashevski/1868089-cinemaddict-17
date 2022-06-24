@@ -1,13 +1,9 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractView from '../framework/view/abstract-view';
 
-const createLoadingTemplate = () => (
-  `<h2 class="films-list__title">
-    Loading...
-  </h2>`
-);
+const createLoadingFilmsTemplate = () => '<h2 class="films-list__title">Loading...</h2>';
 
-export default class LoadingView extends AbstractView {
+export default class LoadingFilmsView extends AbstractView {
   get template() {
-    return createLoadingTemplate();
+    return createLoadingFilmsTemplate();
   }
 }
