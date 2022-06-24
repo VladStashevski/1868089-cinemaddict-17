@@ -2,7 +2,7 @@ import FilmCardView from '../view/film-card-view';
 import PopupSectionView from '../view/film-popup-section-view';
 import {render, replace, remove, RenderPosition} from '../framework/render';
 import {UserAction, UpdateType} from '../const';
-import PopupFormView from '../view/film-details-view';
+import PopupFormView from '../view/film-popup-form-view';
 
 export default class FilmPresenter {
   #container = null;
