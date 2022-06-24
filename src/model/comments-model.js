@@ -1,49 +1,55 @@
-import Observable from '../framework/observable.js';
-import FilmsModel from './films-model.js';
+import Observable from '../framework/observable';
 
 export default class CommentsModel extends Observable {
-  #commentsApiService = null;
   #comments = [];
+  #commentsApiService = null;
 
   constructor(commentsApiService) {
     super();
     this.#commentsApiService = commentsApiService;
   }
 
-  getComments = async (filmId) => {
+  get comments() {
+    return this.#comments;
+  }
+
+  init = async (filmId) => {
     try {
-      this.#comments = await this.#commentsApiService.getComments(filmId);
-      return this.#comments;
+      const comments = await this.#commentsApiService.getComments(filmId);
+      this.#comments = comments;
     } catch(err) {
-      throw new Error('Can\'t get comments');
+      this.#comments = [];
     }
   };
 
-  addComment = async (updateType, update, film) => {
+  addComment = async (updateType, updatedFilm, updatedComment) => {
     try {
-      const {movie, comments} = await this.#commentsApiService.addComment(update, film.id);
-      film.comments = movie.comments;
-
-      this._notify(updateType, FilmsModel.adaptToClient(movie));
-
-      return comments;
+      const newComment = await this.#commentsApiService.addComment(updatedFilm, updatedComment);
+      this.#comments = [
+        newComment,
+        ...this.#comments,
+      ];
+      this._notify(updateType, updatedFilm);
     } catch(err) {
       throw new Error('Can\'t add comment');
     }
   };
 
-  deleteComment = async (updateType, deleteId, film, comments) => {
-    const index = comments.findIndex((comment) => comment.id === deleteId);
-    film.comments = film.comments.filter((item) => item !== deleteId);
+  deleteComment = async (updateType, updatedFilm, updatedComment) => {
+    const index = this.#comments.findIndex((comment) => comment.id === updatedComment);
 
     if (index === -1) {
       throw new Error('Can\'t delete unexisting comment');
     }
 
     try {
-      await this.#commentsApiService.deleteComment(deleteId);
+      await this.#commentsApiService.deleteComment(updatedComment);
 
-      this._notify(updateType, film);
+      this.#comments = [
+        ...this.#comments.slice(0, index),
+        ...this.#comments.slice(index + 1),
+      ];
+      this._notify(updateType, updatedFilm);
     } catch(err) {
       throw new Error('Can\'t delete comment');
     }
