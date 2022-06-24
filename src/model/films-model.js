@@ -1,9 +1,9 @@
-import Observable from '../framework/observable.js';
+import Observable from '../framework/observable';
 import {UpdateType} from '../const.js';
 
 export default class FilmsModel extends Observable {
-  #filmsApiService = null;
   #films = [];
+  #filmsApiService = null;
 
   constructor(filmsApiService) {
     super();
@@ -11,13 +11,13 @@ export default class FilmsModel extends Observable {
   }
 
   get films() {
-    return [...this.#films];
+    return this.#films;
   }
 
   init = async () => {
     try {
       const films = await this.#filmsApiService.films;
-      this.#films = films.map(FilmsModel.adaptToClient);
+      this.#films = films.map(this.#adaptToClient);
     } catch(err) {
       this.#films = [];
     }
@@ -25,42 +25,54 @@ export default class FilmsModel extends Observable {
     this._notify(UpdateType.INIT);
   };
 
-  updateFilm = async (updateType, update) => {
-    const index = this.#films.findIndex((film) => film.id === update.id);
+  updateFilm = async (updateType, updateFilm) => {
+    const index = this.#films.findIndex((film) => film.id === updateFilm.id);
 
     if (index === -1) {
-      throw new Error('Can\'t update unexisting film');
+      throw new Error('Can\'t update unexisting movie');
     }
 
     try {
-      const response = await this.#filmsApiService.updateFilm(update);
-      const updatedFilm = FilmsModel.adaptToClient(response);
-
+      const response = await this.#filmsApiService.updateFilm(updateFilm);
+      const updatedFilm = this.#adaptToClient(response);
       this.#films = [
         ...this.#films.slice(0, index),
         updatedFilm,
         ...this.#films.slice(index + 1),
       ];
-
       this._notify(updateType, updatedFilm);
     } catch(err) {
-      throw new Error('Can\'t update film');
+      throw new Error('Can\'t update movie');
     }
   };
 
-  static adaptToClient = (film) => {
-    const adaptedFilm = {...film,
-      genre: film['film_info']['genre'],
-      watchlist: film['user_details']['watchlist'],
-      watched: film['user_details']['already_watched'],
-      favorite: film['user_details']['favorite'],
+  #adaptToClient(film) {
+    return {
+      id: film.id,
+      comments: film.comments,
+      filmInfo: {
+        title: film.film_info.title,
+        alternativeTitle: film.film_info.alternative_title,
+        totalRating: film.film_info.total_rating,
+        poster: film.film_info.poster,
+        ageRating: film.film_info.age_rating,
+        director: film.film_info.director,
+        writers: film.film_info.writers,
+        actors: film.film_info.actors,
+        release: {
+          date: film.film_info.release.date,
+          releaseCountry: film.film_info.release.release_country
+        },
+        runtime: film.film_info.runtime,
+        genre: film.film_info.genre,
+        description: film.film_info.description
+      },
+      userDetails: {
+        watchlist: film.user_details.watchlist,
+        alreadyWatched: film.user_details.already_watched,
+        watchingDate: film.user_details.watching_date,
+        favorite: film.user_details.favorite
+      }
     };
-
-    delete adaptedFilm['film_info']['genre'];
-    delete adaptedFilm['user_details']['watchlist'];
-    delete adaptedFilm['user_details']['already_watched'];
-    delete adaptedFilm['user_details']['favorite'];
-
-    return adaptedFilm;
-  };
+  }
 }
