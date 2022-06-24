@@ -1,367 +1,190 @@
-import {render, remove, RenderPosition} from '../framework/render.js';
-import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
-import FilmsView from '../view/films-view.js';
-import FilmsListView from '../view/films-list-view.js';
-import FilmsListTopRatedView from '../view/top-rated-view.js';
-import FilmsListMostCommentedView from '../view/most-commented-view.js';
-import FilmsContainerView from '../view/film-container-view.js';
-import ShowMoreButtonView from '../view/load-more-button-view.js';
-import FilmsEmptyView from '../view/no-film-card-view.js';
-import LoadingView from '../view/loading-view.js';
-import FilmPopupView from '../view/film-details-view.js';
-import SortView from '../view/sort-view.js';
-import FilmPresenter from './film-details-presenter.js';
-import {sortFilmByDate, sortFilmByRating, sortFilmByComments} from '../utils/helper.js';
-import {filter} from '../utils/filter.js';
-import {CARDS_PER_STEP, body, SortType, UpdateType, FilterType, TimeLimit} from '../const.js';
+import FilmCardView from '../view/film-card-view';
+import PopupSectionView from '../view/film-popup-section-view';
+import {render, replace, remove, RenderPosition} from '../framework/render';
+import {UserAction, UpdateType} from '../const';
+import PopupFormView from '../view/film-details-view';
 
-export default class FilmListPresenter {
-  #filmsContainer = null;
-  #filmsModel = null;
-  #filterModel = null;
-  #commentsModel = null;
-  #filmPopupComponent = null;
-
-  #filmsComponent = new FilmsView();
-  #filmsListComponent = new FilmsListView();
-  #filmsListTopRatedComponent = new FilmsListTopRatedView();
-  #filmsListMostCommentedComponent = new FilmsListMostCommentedView();
-  #filmsContainerComponent = new FilmsContainerView();
-  #filmsContainerTopRatedComponent = new FilmsContainerView();
-  #filmsContainerMostCommentedComponent = new FilmsContainerView();
-  #loadingComponent = new LoadingView();
-  #noFilmComponent = null;
-  #sortComponent = null;
-  #showMoreButtonComponent = null;
-
-  #renderedFilmCount = CARDS_PER_STEP;
-  #filmPresenter = new Map();
-  #filmTopRatedPresenter = new Map();
-  #filmMostCommentedPresenter = new Map();
+export default class FilmPresenter {
+  #container = null;
+  #footerElement = null;
+  #filmCardComponent = null;
+  #popupFormComponent = null;
+  #changeData = null;
   #film = null;
+  #resetPopup = null;
+  #commentsModel = null;
+  #popupSectionComponent = null;
+  #scrollPosition = null;
+  #popupFormInfo = null;
+  #popupContainer = null;
 
-  #currentSortType = SortType.DEFAULT;
-  #filterType = FilterType.ALL;
-  #isLoading = true;
-  #uiBlocker = null;
-
-  constructor(filmsContainer, filterModel, filmsModel, commentsModel) {
-    this.#filmsContainer = filmsContainer;
-    this.#filterModel = filterModel;
-    this.#filmsModel = filmsModel;
+  constructor(container, footerElement, changeData, resetPopup, commentsModel, popupContainer) {
+    this.#container = container;
+    this.#footerElement = footerElement;
+    this.#changeData = changeData;
+    this.#resetPopup = resetPopup;
     this.#commentsModel = commentsModel;
-
-    this.#filterModel.addObserver(this.#handleModelEvent);
-    this.#filmsModel.addObserver(this.#handleModelEvent);
-    this.#commentsModel.addObserver(this.#handleModelEvent);
-
-    this.#uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
+    this.#popupContainer = popupContainer;
+    this.#commentsModel.addObserver(this.#changeData);
   }
 
-  get films() {
-    this.#filterType = this.#filterModel.filter;
-    const films = this.#filmsModel.films;
-    const filteredFilms = filter[this.#filterType](films);
-
-    switch (this.#currentSortType) {
-      case SortType.DATE:
-        return filteredFilms.sort(sortFilmByDate);
-      case SortType.RATING:
-        return filteredFilms.sort(sortFilmByRating);
-    }
-
-    return filteredFilms;
+  setSaving() {
+    this.#popupFormComponent.updateElement({isFormDisabled: true, isButtonDisabled: true});
   }
 
-  init = () => {
-    this.#renderBoard();
-  };
+  setDeleting(comment) {
+    this.#popupFormComponent.updateElement({isFormDisabled: true, isButtonDisabled: true, deletingId: comment});
+  }
 
-  #handleShowMoreButtonClick = () => {
-    const filmCount = this.films.length;
-    const newRenderedFilmCount = Math.min(filmCount, this.#renderedFilmCount + CARDS_PER_STEP);
-    const films = this.films.slice(this.#renderedFilmCount, newRenderedFilmCount);
+  setAborting() {
+    const resetPopupForm = () => {
+      this.#popupFormComponent.updateElement({isFormDisabled: false, isButtonDisabled: false, deletingId: ''});
+    };
 
-    this.#renderFilms(films);
-    this.#renderedFilmCount = newRenderedFilmCount;
+    this.#popupFormComponent.shake(resetPopupForm);
+  }
 
-    if (this.#renderedFilmCount >= filmCount) {
-      remove(this.#showMoreButtonComponent);
-    }
-  };
-
-  #handleModelEvent = (updateType, data) => {
-    switch (updateType) {
-      case UpdateType.PATCH:
-        this.#filmPresenter.get(data.id).init(data);
-        break;
-      case UpdateType.MINOR:
-        this.#clearBoard();
-        this.#renderBoard();
-        break;
-      case UpdateType.MAJOR:
-        this.#clearBoard({resetRenderedFilmCount: true, resetSortType: true});
-        this.#renderBoard();
-        break;
-      case UpdateType.INIT:
-        this.#isLoading = false;
-        remove(this.#loadingComponent);
-        this.#renderBoard();
-        break;
-    }
-  };
-
-  #renderSort = () => {
-    this.#sortComponent = new SortView(this.#currentSortType);
-
-    this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
-    render(this.#sortComponent, this.#filmsListComponent.element, RenderPosition.AFTERBEGIN);
-  };
-
-  #handleSortTypeChange = (sortType) => {
-    if (this.#currentSortType === sortType) {
-      return;
-    }
-
-    this.#currentSortType = sortType;
-
-    this.#clearBoard({resetRenderedFilmCount: true});
-    this.#renderBoard();
-  };
-
-  #renderFilm = (film) => {
-    const filmPresenter = new FilmPresenter(this.#filmsContainerComponent.element, this.#openFilmPopup, this.#filmsModel);
-
-    filmPresenter.init(film);
-    this.#filmPresenter.set(film.id, filmPresenter);
-  };
-
-  #renderFilms = (films) => {
-    films.forEach((film) => this.#renderFilm(film));
-  };
-
-  #renderTopRatedFilm = (film) => {
-    const filmTopRatedPresenter = new FilmPresenter(this.#filmsContainerTopRatedComponent.element, this.#openFilmPopup, this.#filmsModel);
-
-    filmTopRatedPresenter.init(film);
-    this.#filmTopRatedPresenter.set(film.id, filmTopRatedPresenter);
-  };
-
-  #renderTopRatedFilms = (films) => {
-    films.forEach((film) => this.#renderTopRatedFilm(film));
-  };
-
-  #renderMostCommentedFilm = (film) => {
-    const filmMostCommentedPresenter = new FilmPresenter(this.#filmsContainerMostCommentedComponent.element, this.#openFilmPopup, this.#filmsModel);
-
-    filmMostCommentedPresenter.init(film);
-    this.#filmMostCommentedPresenter.set(film.id, filmMostCommentedPresenter);
-  };
-
-  #renderMostCommentedFilms = (films) => {
-    films.forEach((film) => this.#renderMostCommentedFilm(film));
-  };
-
-  #renderLoading = () => {
-    render(this.#loadingComponent, this.#filmsComponent.element, RenderPosition.AFTERBEGIN);
-  };
-
-  #renderNoFilms = () => {
-    this.#noFilmComponent = new FilmsEmptyView(this.#filterType);
-    render(this.#noFilmComponent, this.#filmsComponent.element, RenderPosition.AFTERBEGIN);
-  };
-
-  #renderShowMoreButton = () => {
-    this.#showMoreButtonComponent = new ShowMoreButtonView();
-
-    this.#showMoreButtonComponent.setClickHandler(this.#handleShowMoreButtonClick);
-    render(this.#showMoreButtonComponent, this.#filmsListComponent.element);
-  };
-
-  #openFilmPopup = async (film) => {
+  init(film) {
     this.#film = film;
+    const prevFilmCardComponent = this.#filmCardComponent;
 
-    if (this.#filmPopupComponent) {
-      this.#closeFilmPopup();
+    this.#filmCardComponent = new FilmCardView(film, this.#film.comments);
+
+    this.#filmCardComponent.setOpenPopupClickHandler(() => {
+      this.#handleFilmClick();
+    });
+
+    this.#filmCardComponent.setAddToWatchlistClickHandler(this.#handleAddToWatchlistClick);
+    this.#filmCardComponent.setAddToWatchedClickHandler(this.#handleAddToWatchedClick);
+    this.#filmCardComponent.setAddToFavoriteClickHandler(this.#handleAddToFavoriteClick);
+
+    if (prevFilmCardComponent === null) {
+      render(this.#filmCardComponent, this.#container.element);
+      return;
     }
 
-    const comments = await this.#commentsModel.getComments(film.id);
-
-    this.#filmPopupComponent = new FilmPopupView(this.#film, comments);
-    this.#filmPopupComponent.setCloseClickHandler(this.#closeFilmPopup);
-    this.#filmPopupComponent.setWatchlistPopupClickHandler(this.#watchlistPopupClickHandler);
-    this.#filmPopupComponent.setWatchedPopupClickHandler(this.#watchedPopupClickHandler);
-    this.#filmPopupComponent.setFavoritePopupClickHandler(this.#favoritePopupClickHandler);
-    this.#filmPopupComponent.setAddSubmitHandler(this.#handleCommentAddHandler);
-    this.#filmPopupComponent.setDeleteClickHandler(this.#handleCommentDeleteHandler);
-    render(this.#filmPopupComponent, body);
-
-    document.addEventListener('keydown', this.#handleKeyDown);
-    body.classList.add('hide-overflow');
-  };
-
-  #closeFilmPopup = () => {
-    remove(this.#filmPopupComponent);
-
-    document.removeEventListener('keydown', this.#handleKeyDown);
-    body.classList.remove('hide-overflow');
-    this.#filmPopupComponent = null;
-  };
-
-  #handleKeyDown = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      this.#closeFilmPopup();
-    }
-  };
-
-  #clearBoard = ({resetRenderedFilmCount = false, resetSortType = false} = {}) => {
-    const filmCount = this.films.length;
-
-    this.#filmPresenter.forEach((presenter) => presenter.destroy());
-    this.#filmPresenter.clear();
-
-    this.#filmTopRatedPresenter.forEach((presenter) => presenter.destroy());
-    this.#filmTopRatedPresenter.clear();
-
-    this.#filmMostCommentedPresenter.forEach((presenter) => presenter.destroy());
-    this.#filmMostCommentedPresenter.clear();
-
-    remove(this.#sortComponent);
-    remove(this.#loadingComponent);
-    remove(this.#noFilmComponent);
-    remove(this.#showMoreButtonComponent);
-
-    if (this.#noFilmComponent) {
-      remove(this.#noFilmComponent);
-    }
-
-    if (resetRenderedFilmCount) {
-      this.#renderedFilmCount = CARDS_PER_STEP;
+    if (this.#container.element.contains(prevFilmCardComponent.element)) {
+      replace(this.#filmCardComponent, prevFilmCardComponent);
     } else {
-      this.#renderedFilmCount = Math.min(filmCount, this.#renderedFilmCount);
+      render(this.#filmCardComponent, this.#container.element);
     }
 
-    if (resetSortType) {
-      this.#currentSortType = SortType.DEFAULT;
+    remove(prevFilmCardComponent);
+
+    if (this.#popupSectionComponent) {
+      this.openPopup();
+    }
+  }
+
+  openPopup = async (data = this.#film) => {
+    const comments = await this.#commentsModel.init(this.#film.id).then(() => this.#commentsModel.comments);
+    this.#film = data;
+    this.#resetPopup();
+    const prevPopupSectionComponent = this.#popupSectionComponent;
+    this.#popupSectionComponent = new PopupSectionView();
+    this.#popupFormComponent = new PopupFormView(this.#film, comments, this.#commentsModel);
+    this.#popupFormComponent.setClosePopupClickHandler(this.#handleClosePopupClick);
+    this.#popupFormComponent.setAddToWatchlistClickHandler(this.#handleAddToWatchlistClick);
+    this.#popupFormComponent.setAddToWatchedClickHandler(this.#handleAddToWatchedClick);
+    this.#popupFormComponent.setAddToFavoriteClickHandler(this.#handleAddToFavoriteClick);
+    this.#popupFormComponent.setDeleteCommentClickHandlers(this.#handleDeleteCommentClick);
+    this.#popupFormComponent.setAddCommentKeyDownHandler(this.#handleAddCommentKeyDown);
+    this.#popupContainer.classList.add('hide-overflow');
+
+    document.addEventListener('keydown', this.#escKeyDownHandler);
+
+    if (prevPopupSectionComponent === null) {
+      render(this.#popupSectionComponent, this.#footerElement, RenderPosition.AFTEREND);
+      render(this.#popupFormComponent, this.#popupSectionComponent.element);
+      this.#popupSectionComponent.element.scrollTo(0, this.#scrollPosition);
+      this.#popupFormComponent.updateElement(this.#popupFormInfo);
     }
   };
 
-  #renderBoard = () => {
-    const filmCount = this.films.length;
-
-    render(this.#filmsComponent, this.#filmsContainer);
-
-    if (this.#isLoading) {
-      this.#renderLoading();
+  resetPopupView = () => {
+    if (this.#popupSectionComponent === null) {
       return;
     }
 
-    if (filmCount === 0) {
-      this.#renderNoFilms();
-      return;
-    }
-
-    this.#renderSort();
-
-    render(this.#filmsListComponent, this.#filmsComponent.element);
-    render(this.#filmsContainerComponent, this.#filmsListComponent.element);
-    this.#renderFilms(this.films.slice(0, Math.min(filmCount, this.#renderedFilmCount)));
-
-    if (filmCount > this.#renderedFilmCount) {
-      this.#renderShowMoreButton();
-    }
-
-    render(this.#filmsListTopRatedComponent, this.#filmsComponent.element);
-    render(this.#filmsContainerTopRatedComponent, this.#filmsListTopRatedComponent.element);
-    this.#renderTopRatedFilms(this.films.sort(sortFilmByRating).slice(0, 2));
-
-    render(this.#filmsListMostCommentedComponent, this.#filmsComponent.element);
-    render(this.#filmsContainerMostCommentedComponent, this.#filmsListMostCommentedComponent.element);
-    this.#renderMostCommentedFilms(this.films.sort(sortFilmByComments).slice(0, 2));
+    this.#closePopup(this.#escKeyDownHandler);
   };
 
-  #watchlistPopupClickHandler = async (film) => {
-    this.#uiBlocker.block();
+  isOpenedPopup() {
+    return !!this.#popupSectionComponent;
+  }
 
-    try {
-      await this.#filmsModel.updateFilm(
-        UpdateType.MINOR,
-        {...film, watchlist: !film.watchlist},
-      );
-
-      this.#filmPopupComponent.updateElement({watchlist: !film.watchlist});
-    } catch(err) {
-      this.#filmPresenter.get(film.id).setPopupControlsAborting(this.#filmPopupComponent);
-    }
-
-    this.#uiBlocker.unblock();
+  destroy = () => {
+    remove(this.#filmCardComponent);
+    remove(this.#popupSectionComponent);
   };
 
-  #watchedPopupClickHandler = async (film) => {
-    this.#uiBlocker.block();
+  #closePopup() {
+    remove(this.#popupSectionComponent);
+    this.#popupContainer.classList.remove('hide-overflow');
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    this.#popupSectionComponent = null;
+  }
 
-    try {
-      await this.#filmsModel.updateFilm(
-        UpdateType.MINOR,
-        {...film, watched: !film.watched},
-      );
-
-      this.#filmPopupComponent.updateElement({watched: !film.watched});
-    } catch(err) {
-      this.#filmPresenter.get(film.id).setPopupControlsAborting(this.#filmPopupComponent);
+  #escKeyDownHandler = (evt) => {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      this.#closePopup(this.#escKeyDownHandler);
     }
-
-    this.#uiBlocker.unblock();
   };
 
-  #favoritePopupClickHandler = async (film) => {
-    this.#uiBlocker.block();
+  #handleFilmClick() {
+    this.openPopup();
+  }
 
-    try {
-      await this.#filmsModel.updateFilm(
-        UpdateType.MINOR,
-        {...film, favorite: !film.favorite},
-      );
-
-      this.#filmPopupComponent.updateElement({favorite: !film.favorite});
-    } catch(err) {
-      this.#filmPresenter.get(film.id).setPopupControlsAborting(this.#filmPopupComponent);
-    }
-
-    this.#uiBlocker.unblock();
+  #handleClosePopupClick = () => {
+    this.#closePopup(this.#escKeyDownHandler);
   };
 
-  #handleCommentAddHandler = async (film, comment) => {
-    this.#uiBlocker.block();
-
-    try {
-      const newComments = await this.#commentsModel.addComment(UpdateType.PATCH, comment, film);
-      await this.#filmsModel.updateFilm(UpdateType.MINOR, {...film});
-      this.#filmPopupComponent.updateElementByComments(newComments, {comments: film.comments});
-    } catch(err) {
-      this.#filmPresenter.get(film.id).setAddAborting(this.#filmPopupComponent);
-    }
-
-    this.#uiBlocker.unblock();
+  #handleAddToWatchlistClick = () => {
+    this.#customUpdateElement(
+      true,
+      UserAction.UPDATE_FILM,
+      UpdateType.MINOR,
+      {...this.#film, userDetails: {...this.#film.userDetails, watchlist: !this.#film.userDetails.watchlist}});
   };
 
-  #handleCommentDeleteHandler = async (film, id, target, comments) => {
-    this.#uiBlocker.block();
+  #handleAddToWatchedClick = () => {
+    this.#customUpdateElement(
+      true,
+      UserAction.UPDATE_FILM,
+      UpdateType.MINOR,
+      {...this.#film, userDetails: {...this.#film.userDetails, alreadyWatched: !this.#film.userDetails.alreadyWatched}});
+  };
 
-    target.setAttribute('disabled', 'disabled');
-    target.textContent = 'Deleting...';
-    const newComments = comments.filter((comment) => comment.id !== id);
+  #handleAddToFavoriteClick = () => {
+    this.#customUpdateElement(
+      true,
+      UserAction.UPDATE_FILM,
+      UpdateType.MINOR,
+      {...this.#film, userDetails: {...this.#film.userDetails, favorite: !this.#film.userDetails.favorite}});
+  };
 
-    try {
-      await this.#commentsModel.deleteComment(UpdateType.PATCH, id, film, comments);
-      await this.#filmsModel.updateFilm(UpdateType.MINOR, {...film});
-      this.#filmPopupComponent.updateElementByComments(newComments, {comments: film.comments});
-    } catch(err) {
-      target.textContent = 'Delete';
-      target.removeAttribute('disabled', 'disabled');
-      this.#filmPresenter.get(film.id).setDeleteAborting(this.#filmPopupComponent, target);
+  #handleAddCommentKeyDown = (film, comment) => {
+    this.#customUpdateElement(
+      false,
+      UserAction.ADD_COMMENT,
+      UpdateType.PATCH,
+      film, comment);
+  };
+
+  #handleDeleteCommentClick = (film, comment) => {
+    this.#customUpdateElement(
+      true,
+      UserAction.DELETE_COMMENT,
+      UpdateType.PATCH,
+      film, comment);
+  };
+
+  #customUpdateElement(isSavingUserInfo, userAction, updateType, film, comment) {
+    if (this.#popupSectionComponent) {
+      this.#scrollPosition = this.#popupSectionComponent.element.scrollTop;
+      this.#popupFormInfo = isSavingUserInfo ? this.#popupFormComponent._state : '';
     }
 
-    this.#uiBlocker.unblock();
-  };
+    this.#changeData(userAction, updateType, film, comment);
+  }
 }
