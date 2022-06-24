@@ -2,23 +2,26 @@ import ApiService from '../framework/api-service.js';
 import {Method} from '../const.js';
 
 export default class CommentsApiService extends ApiService {
-  getComments = async (filmId) => this._load({url: `comments/${filmId}`})
-    .then(ApiService.parseResponse);
+  getComments(filmId) {
+    return this._load({url: `comments/${filmId}`})
+      .then(ApiService.parseResponse);
+  }
 
-  addComment = async (comment, filmId) => {
+  addComment = async (film, comment) => {
     const response = await this._load({
-      url: `comments/${filmId}`,
+      url: `comments/${film.id}`,
       method: Method.POST,
       body: JSON.stringify(comment),
       headers: new Headers({'Content-Type': 'application/json'}),
     });
+    const parsedResponse = await ApiService.parseResponse(response);
 
-    return await ApiService.parseResponse(response);
+    return parsedResponse;
   };
 
-  deleteComment = async (commentId) => {
+  deleteComment = async (comment) => {
     const response = await this._load({
-      url: `comments/${commentId}`,
+      url: `comments/${comment}`,
       method: Method.DELETE,
     });
 
